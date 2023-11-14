@@ -42,10 +42,6 @@ export class AdminController {
         return await this.admiservice.loginAdmin(dto)
     }
 
-
-
-
-    //admin actions 
    
 
 }

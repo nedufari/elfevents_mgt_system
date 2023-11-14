@@ -6,7 +6,7 @@ import { JwtGuard } from "../../auth/guards/jwt.guard";
 import {  AccessLevelGuard, AdmintypeGuard } from "../../auth/guards/role.guard";
 import { AccessLevelDecorator, AdminType } from "../../Auth/decorator/role.decorator";
 import { AccessLevels, AdminTypes} from "../../Enums/enums";
-import { IGuestsResponse } from "../guests/guests";
+import { IGuests, IGuestsResponse } from "../guests/guests";
 
 @UseGuards(JwtGuard)
 
@@ -18,13 +18,14 @@ export class AdminActionController{
 
     @UseGuards(AdmintypeGuard)
     @AdminType(AdminTypes.SUPER_ADMIN)
+    @AccessLevelDecorator(AccessLevels.HIGHEST_LEVEL)
     @Post('/create-other-admin/:id')
     async CreateOtherAdmin(@Body()dto:CreateAdminDto,@Param('id')id:string):Promise<ICreateOtherAdmin>{
         return await this.adminactionservice.CreateAnyAdminKind(id,dto)
     }
 
-    // @UseGuards(AdmintypeGuard)
-    // @AdminType(AdminTypes.CORDINATOR)
+    @UseGuards(AdmintypeGuard)
+    @AdminType(AdminTypes.SUPER_ADMIN)
     @Get('all-admins')
     async getAllAdmins(@Req()request):Promise<IAdmin[]>{
         try {
@@ -39,10 +40,23 @@ export class AdminActionController{
        
     }
 
+    @UseGuards(AdmintypeGuard)
+    @AdminType(AdminTypes.SUPER_ADMIN,AdminTypes.CLIENT,AdminTypes.REGISTRATION_ELF,AdminTypes.CORDINATOR)
+    @Get('all-guests')
+    async getAllGuests(@Req()request):Promise<IGuests[]>{
+        try {
+            return await this.adminactionservice.getAllGuests()
+            
+        } catch (error) {
+            throw error
+        }
+       
+    }
+
     
     @UseGuards(AdmintypeGuard)
     @AdminType(AdminTypes.SUPER_ADMIN)
-    @Patch('upgrade-clearancelevel/:id/:adminid')
+    @Patch('upgrade-accesslevel/:id/:adminid')
     async upgradeAdminClearance(@Param('id')id:string,@Param('adminid')adminid:string,@Body()dto:UpgradeClearanceLevelDto,@Req()request):Promise<{message:string,response:IUpgradeAdminClearanceLevel}>{
         const newAdmin = await this.adminactionservice.UpgradeAdminClearanceLevel(id,adminid,dto)
         return newAdmin
@@ -154,6 +168,8 @@ export class AdminActionController{
       return { count };
     }
 
+
+    //other actions for the super admin alone 
     @UseGuards(AdmintypeGuard)
     @AdminType(AdminTypes.SUPER_ADMIN,AdminTypes.CLIENT)
     @Post('download-guest-list')

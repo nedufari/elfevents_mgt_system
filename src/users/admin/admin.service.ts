@@ -71,7 +71,7 @@ async validateuserbyId(id:string,role:Roles){
     const verificationlink = `http://localhost:3005/api/v1/admin/verify-email?token=${emiailverificationcode}&email=${dto.email} `
    
      // mail
-     await this.mailerservice.SendVerificationMail(dto.email, verificationlink,dto.name)
+     await this.mailerservice.SendVerificationeMail(dto.email, verificationlink,dto.name)
 
     //otp
     const otp = new UserOtp();
@@ -175,7 +175,7 @@ async validateuserbyId(id:string,role:Roles){
      
          
            //send mail 
-           await this.mailerservice.SendVerificationMail(newOtp.email,verificationlink, emailexsist.name)
+           await this.mailerservice.SendVerificationeMail(newOtp.email,verificationlink, emailexsist.name)
     
            return {message:'New Verification Link sent successfully'}
            
@@ -192,7 +192,7 @@ async validateuserbyId(id:string,role:Roles){
       expirationTime.setHours(expirationTime.getHours() + 1);
 
     //send reset link to the email provided 
-    await this.mailerservice.SendPasswordResetLinkMail(dto.email,resetlink)
+    await this.mailerservice.SendPasswordResetLinkMail(dto.email,resetlink,isEmailReistered.name)
 
     //save the reset link and the expiration time to the database 
     isEmailReistered.password_reset_link = resetlink

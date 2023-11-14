@@ -22,14 +22,14 @@ export class CreateAdminDto{
 
 export class UpgradeClearanceLevelDto{
     @IsEnum(AccessLevels)
-    @IsOptional()
+    @IsNotEmpty()
     accessLevel:AccessLevels
 
 }
 
 export class ChangeAdmintypeDto{
     @IsEnum(AdminTypes)
-    @IsOptional()
+    @IsNotEmpty()
     admintype:AdminTypes
 }
 

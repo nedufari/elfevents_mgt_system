@@ -27,6 +27,7 @@ import {
 import {
   Accreditation,
   ComingAlongWithSomeone,
+  GuestsStatus,
   NotificationType,
 } from '../../Enums/enums';
 import { IGuests, IGuestsResponse } from '../guests/guests';
@@ -147,7 +148,7 @@ export class AdminActionService {
         );
 
       const isAdmin = await this.adminripo.findOne({
-        where: { AdminID: adminid },
+        where: { id: adminid },
       });
       if (!isAdmin)
         throw new HttpException(
@@ -193,7 +194,7 @@ export class AdminActionService {
         );
 
       const isAdmin = await this.adminripo.findOne({
-        where: { AdminID: adminid },
+        where: { id: adminid },
       });
       if (!isAdmin)
         throw new HttpException(
@@ -236,7 +237,7 @@ export class AdminActionService {
       );
 
     const isAdmin = await this.adminripo.findOne({
-      where: { AdminID: adminid },
+      where: { id: adminid },
     });
     if (!isAdmin)
       throw new HttpException(
@@ -278,7 +279,7 @@ export class AdminActionService {
       );
 
     const isAdmin = await this.adminripo.findOne({
-      where: { AdminID: adminid },
+      where: { id: adminid },
     });
     if (!isAdmin)
       throw new HttpException(
@@ -291,51 +292,18 @@ export class AdminActionService {
 
     //save the notification
     const notification = new Notifications();
-    notification.account = id && isAdmin.id;
+    notification.account = admin.id;
     notification.subject = 'Admin deleted !';
     notification.notification_type = NotificationType.ADMIN_DELETED;
     notification.message = `the admin with id ${adminid}  has been deleted on the admin portal of walkway by superadmin ${admin.name} `;
     await this.notificationripo.save(notification);
 
     return {
-      message: `admin with ${adminid}  has been deleted  by the super admin ${admin.name}`,
+      message: ` ${isAdmin.name}  has been deleted  by the super admin ${admin.name}`,
     };
   }
 
-  // async AccredidateGuests (id:string, keyword:any|string, dto:AccreditationDto):Promise<{message:string, totalcount:number, guest:IGuestsResponse}>{
-  //   try {
 
-  //     //find admin
-  //     const findadmin = await this.adminripo.findOne({where:{id:id}})
-  //     if (!findadmin) throw new HttpException(`admin with id ${id} not found`,HttpStatus.NOT_FOUND)
-
-  //     //query the guest list for the accesscode
-  //     const query = `SELECT * FROM guest WHERE accesscode ILIKE $1`;
-  //     const value = [`%${keyword}%`,keyword];
-  //     const guest = await this.guestripo.query(query,value)
-  //     const totalcount = guest.length
-
-  //     if (totalcount === 0) throw new HttpException(`no search result found for ${keyword}`,HttpStatus.NOT_FOUND)
-  //     else {
-
-  //       if (totalcount !== 0){
-  //         //accredidtate the list
-  //         guest.accreditation_status = dto.accreditate
-  //         await this.guestripo.save(guest)
-
-  //         if (!dto.accreditate) throw new HttpException('please this guest needs to be accreditated or denied entry',HttpStatus.CONTINUE)
-  //       }
-
-  //   }
-
-  //     const message = `guest is on the guest list `
-  //     return {message,totalcount,guest}
-
-  //   } catch (error) {
-  //     throw error
-
-  //   }
-  // }
 
   async SearchAndAccredidateGuests(
     id: string,
@@ -376,6 +344,7 @@ export class AdminActionService {
         // Accreditate the list
         for (const guest of guests) {
           guest.accreditation_status = dto.accreditate;
+          guest.status = GuestsStatus.CHECKED_IN
         }
         await this.guestripo.save(guests);
 
@@ -415,13 +384,13 @@ export class AdminActionService {
 
   async getAccreditedGuestCount(): Promise<number> {
     return this.guestripo.count({
-      where: { accreditation_status: Accreditation.ACCREIDATE },
+      where: { accreditation_status: Accreditation.ACCREIDATED },
     });
   }
 
   async getDeniedGuestCount(): Promise<number> {
     return this.guestripo.count({
-      where: { accreditation_status: Accreditation.DENY },
+      where: { accreditation_status: Accreditation.DENIED },
     });
   }
 
@@ -454,6 +423,11 @@ export class AdminActionService {
   async getExtraGuestsNames(): Promise<string[]> {
     const guests = await this.guestripo.find();
     return guests.reduce((names, guest) => names.concat(guest.names || []), []);
+  }
+
+  async getAllGuests():Promise<IGuests[]>{
+    const guests = await this.guestripo.find()
+    return guests
   }
 
   // clear entire guestlist only by superadmin

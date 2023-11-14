@@ -6,8 +6,8 @@ export enum GuestsStatus{
 }
 
 export enum Accreditation{
-    ACCREIDATE ="accreditate",
-    DENY = "deny",
+    ACCREIDATED ="accreditated",
+    DENIED = "denied",
     NOT_YET ="not_yet"
 }
 

@@ -63,7 +63,7 @@ export class GuestsService {
         await this.guestripo.save(guest)
 
         //forward the mail 
-        await this.mailerservice.SendVerificationMail(guest.email,guest.access_code,guest.fullname)
+        await this.mailerservice.SendAccessCodeMail(guest.email,guest.access_code,guest.fullname)
         
         //set notification 
         const notification = new Notifications()
