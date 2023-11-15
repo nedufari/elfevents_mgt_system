@@ -68,7 +68,7 @@ async validateuserbyId(id:string,role:Roles){
 
     //2fa authentication 
     const emiailverificationcode =  await this.guestservice.generateAccessCode()
-    const verificationlink = `http://localhost:3005/api/v1/admin/verify-email?token=${emiailverificationcode}&email=${dto.email} `
+    const verificationlink = `http://localhost:3005/api/v1/admin/verify-email1?token=${emiailverificationcode}&email=${dto.email} `
    
      // mail
      await this.mailerservice.SendVerificationeMail(dto.email, verificationlink,dto.name)
@@ -140,6 +140,44 @@ async validateuserbyId(id:string,role:Roles){
       }
 
        //(resend otp)
+
+       async SuperAdminverifyEmail1(token:string, email:string):Promise<{isValid:boolean; accessToken:any, redirectUrl?:string}>{
+        const findemail= await this.otpripo.findOne({where:{email:email}})
+        if (!findemail) throw new HttpException('the user does not match the owner of the otp',HttpStatus.NOT_FOUND)
+        //find the otp privided if it matches with the otp stored 
+        const findotp= await this.otpripo.findOne({where:{otp:token}})
+        if (!findotp) throw new HttpException('you provided an invalid otp,please go back to your mail and confirm the OTP sent to you', HttpStatus.BAD_REQUEST)
+        
+        //find if the otp is expired 
+        if ( findotp.expiration_time <= new Date()) throw new HttpException('otp is expired please request for another one',HttpStatus.REQUEST_TIMEOUT)
+    
+        //return valid and the access token if the user matches 
+    
+        const admin = await this.adminripo.findOne({where:{email:email}})
+        if (admin.email !== findemail.email) throw new HttpException("this email does not match the customer record we have ", HttpStatus.NOT_FOUND)
+        else{
+         
+          admin.Isverfified=true
+          admin.Islogged_in=true
+          admin.Isregistered =true
+        
+    
+         const notification = new Notifications()
+          notification.account= admin.id,
+          notification.subject="Super Admin Verified!"
+          notification.notification_type=NotificationType.EMAIL_VERIFICATION
+          notification.message=`Hello ${admin.name}, your email has been successfully verified `
+          await this.notificationripo.save(notification)
+    
+          //await this.mailerservice.SendWelcomeEmail(admin.email,admin.brandname)
+    
+          await this.adminripo.save(admin)
+    
+          const accessToken= await this.signToken(admin.id,admin.email,admin.role)
+
+          return {isValid:true, accessToken}
+        }
+      }
 
        async AdminResendemailVerificationLink (dto:RequestOtpResendDto):Promise<{message:string}>{
         const emailexsist = await this.adminripo.findOne({where: { email: dto.email },select: ['id', 'email','role']});

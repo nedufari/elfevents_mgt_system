@@ -182,6 +182,8 @@ export class Mailer {
       <h1 class="verification-heading">Dear, ${name}!</h1>
       <p class="message">Your Verification Link:</p>
       <p class="otp">${token}</p>
+
+     
       <div class="instructions">
         <p>
           You are getting this email because, you just signed up as a Super Admin on Ease Hub .

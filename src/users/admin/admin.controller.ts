@@ -1,4 +1,4 @@
-import { Body, Controller,Get,Param,Patch,Post,Query } from '@nestjs/common';
+import { Body, Controller,Get,Param,Patch,Post,Query, Res } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { FinallyResetPasswordDto, Logindto, RequestOtpResendDto, SendPasswordResetLinkDto, SuperAdminSignupDto } from './dto/admin.dto';
 import { CreateAdminDto } from './dto/adminAction.dto';
@@ -19,6 +19,8 @@ export class AdminController {
     async Verify_email(@Query('token')token:string, @Query('email')email:string):Promise<{isValid:boolean; accessToken:any}>{
         return await this.admiservice.SuperAdminverifyEmail(token, email)
     }
+
+ 
 
     @Post('/resend-verification-link')
     async resendVerificationLink(@Body()dto:RequestOtpResendDto):Promise<{message:string}>{
