@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards,ForbiddenException } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards,ForbiddenException, Put } from "@nestjs/common";
 import { AdminActionService } from "./adminActions.service";
-import { AccreditationDto, ChangeAdmintypeDto, CreateAdminDto, UpgradeClearanceLevelDto } from "./dto/adminAction.dto";
+import { AccreditationDto, ChangeAdmintypeDto, CreateAdminDto, UpgradeClearanceLevelDto, distinguishGuestsDto } from "./dto/adminAction.dto";
 import { IAdmin, IAdminChangePassword, IChangeAdminType, ICreateOtherAdmin, IUpgradeAdminClearanceLevel } from "./admin";
 import { JwtGuard } from "../../auth/guards/jwt.guard";
 import {  AccessLevelGuard, AdmintypeGuard } from "../../auth/guards/role.guard";
@@ -101,6 +101,19 @@ export class AdminActionController{
         throw error;
       }
     
+    }
+
+    @UseGuards(AdmintypeGuard)
+    @AdminType(AdminTypes.SUPER_ADMIN, AdminTypes.CLIENT)
+    @Put('distinguish/:id/:guestid')
+    async distingusihGuest(@Param("id")id:string, @Param('guestid')guestid:string, @Body()dto:distinguishGuestsDto):Promise<{message:string}>{
+      try {
+        return await this.adminactionservice.distinguishGuest(id,guestid,dto)
+        
+      } catch (error) {
+        throw error
+        
+      }
     }
 
     //extra statistics 

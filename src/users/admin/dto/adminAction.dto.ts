@@ -1,5 +1,5 @@
 import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator"
-import { AccessLevels, Accreditation, AdminTypes } from "../../../Enums/enums"
+import { AccessLevels, Accreditation, AdminTypes, GuestType } from "../../../Enums/enums"
 
 //create admin dto 
 export class CreateAdminDto{
@@ -36,5 +36,10 @@ export class ChangeAdmintypeDto{
 export class AccreditationDto{
     @IsEnum(Accreditation)
     accreditate:Accreditation
+}
+
+export class distinguishGuestsDto{
+    @IsEnum(GuestType)
+    distinguish : GuestType
 }
     

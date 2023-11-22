@@ -1,4 +1,4 @@
-import { AccessLevels, Accreditation, AdminTypes, ComingAlongWithSomeone, GuestsStatus, Roles } from "../../Enums/enums"
+import { AccessLevels, Accreditation, AdminTypes, ComingAlongWithSomeone, GuestType, GuestsStatus, Roles } from "../../Enums/enums"
 
 
 export interface IGuests{
@@ -19,6 +19,7 @@ export interface IGuests{
     access_code : string
     role:Roles
     accreditation_status:Accreditation
+    distinguished_as:GuestType
 
 }
 
@@ -35,6 +36,7 @@ export interface IGuestsResponse{
     registration_date: Date
     role:Roles
     accreditation_status:Accreditation
+    distinguished_as:GuestType
 
 }
 

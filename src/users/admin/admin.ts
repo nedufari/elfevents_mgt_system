@@ -1,4 +1,4 @@
-import { AccessLevels, AdminTypes, Roles } from "../../Enums/enums"
+import { AccessLevels, AdminTypes, GuestType, Roles } from "../../Enums/enums"
 
 
 export interface IAdmin{
@@ -19,6 +19,7 @@ export interface IAdmin{
     role:Roles
     created_at: Date
     AdminID:string
+    
 
 
 }

@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { AccessLevels, Accreditation, AdminTypes, ComingAlongWithSomeone, GuestsStatus, Roles } from "../Enums/enums";
+import { AccessLevels, Accreditation, AdminTypes, ComingAlongWithSomeone, GuestType, GuestsStatus, Roles } from "../Enums/enums";
 import { IAdmin } from "../users/admin/admin";
 import { IGuests } from "../users/guests/guests";
 
@@ -56,6 +56,9 @@ export class GuestEntity implements IGuests{
 
     @Column({type:'enum', enum:Accreditation, default:Accreditation.NOT_YET})
     accreditation_status:Accreditation
+
+    @Column({enum:GuestType, type:'enum', nullable:false,default:GuestType.NORMAL_GUEST})
+    distinguished_as:GuestType
 
    
 

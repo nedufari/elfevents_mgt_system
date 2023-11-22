@@ -23,6 +23,7 @@ import {
   ChangeAdmintypeDto,
   CreateAdminDto,
   UpgradeClearanceLevelDto,
+  distinguishGuestsDto,
 } from './dto/adminAction.dto';
 import {
   Accreditation,
@@ -36,8 +37,6 @@ import { ILike, Like, Raw, getRepository } from 'typeorm';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as csv from 'csv-writer';
-
-
 
 @Injectable()
 export class AdminActionService {
@@ -76,9 +75,18 @@ export class AdminActionService {
           HttpStatus.NOT_FOUND,
         );
 
+        const checkemail = await this.adminripo.findOne({
+          where: { email: createadmindto.email },
+        });
+        if (checkemail)
+          throw new HttpException(
+            'this admin has already been created by you',
+            HttpStatus.CONFLICT,
+          );
+
       const plainpassword = this.generatePassword();
       const hashedpassword =
-        await this.adminservice.hashpassword(plainpassword);
+      await this.adminservice.hashpassword(plainpassword);
 
       //create a password and adminid ,role, //password is auto generated
       const newAdmin = new AdminEntity();
@@ -90,17 +98,6 @@ export class AdminActionService {
       newAdmin.accesslevel = createadmindto.accessLevel;
       newAdmin.Isverfified = true;
       newAdmin.email = `${createadmindto.email}@elfevents.com`;
-
-      const emailexsist = await this.adminripo.findOne({
-        where: { email: createadmindto.email },
-        select: ['id', 'email'],
-      });
-
-      if (emailexsist)
-        throw new HttpException(
-          `user with email: ${createadmindto.email} exists, please use another unique email`,
-          HttpStatus.CONFLICT,
-        );
 
       await this.adminripo.save(newAdmin);
 
@@ -128,15 +125,11 @@ export class AdminActionService {
     }
   }
 
-
-
   async getalladmins(): Promise<IAdmin[]> {
     const admins = await this.adminripo.find();
     return admins;
   }
 
-
-  
   //UPGRADE THE LEVEL OF AN ADMIN
   async UpgradeAdminClearanceLevel(
     id: string,
@@ -307,8 +300,6 @@ export class AdminActionService {
     };
   }
 
-
-
   async SearchAndAccredidateGuests(
     id: string,
     keyword: any | string,
@@ -348,7 +339,7 @@ export class AdminActionService {
         // Accreditate the list
         for (const guest of guests) {
           guest.accreditation_status = dto.accreditate;
-          guest.status = GuestsStatus.CHECKED_IN
+          guest.status = GuestsStatus.CHECKED_IN;
         }
         await this.guestripo.save(guests);
 
@@ -373,6 +364,7 @@ export class AdminActionService {
         role: one.role,
         status: one.status,
         accreditation_status: one.accreditation_status,
+        distinguished_as: one.distinguished_as,
       }));
 
       return { message, totalcount, guest: guestresponse };
@@ -429,13 +421,15 @@ export class AdminActionService {
     return guests.reduce((names, guest) => names.concat(guest.names || []), []);
   }
 
-  async getAllGuests():Promise<IGuests[]>{
-    const guests = await this.guestripo.find()
-    return guests
+  async getAllGuests(): Promise<IGuests[]> {
+    const guests = await this.guestripo.find();
+    return guests;
   }
 
   // clear entire guestlist only by superadmin
-  async DownloadAndclearEntireGuestList(id: string): Promise<{ message: string, filepath:string }> {
+  async DownloadAndclearEntireGuestList(
+    id: string,
+  ): Promise<{ message: string; filepath: string }> {
     try {
       const admin = await this.adminripo.findOne({ where: { id: id } });
       if (!admin)
@@ -444,69 +438,17 @@ export class AdminActionService {
           HttpStatus.NOT_FOUND,
         );
 
-        const guests = await this.guestripo.find();
-
-        if (guests.length === 0) {
-          throw new HttpException('No records to download or clear.', HttpStatus.BAD_REQUEST);
-        }
-
-        const outputPath = path.resolve(__dirname, '../../downloads');
-      const outputFilePath = path.join(outputPath, 'guest_list.csv');
-
-        const csvWriter = csv.createObjectCsvWriter({
-          path:outputFilePath,
-          header:[
-            { id: 'id', title: 'ID' },
-            { id: 'fullname', title: 'Full Name' },
-            { id: 'sm_handle', title: 'Social Media Handle' },
-            { id: 'phone', title: 'Phone' },
-            { id: 'email', title: 'Email' },
-            { id: 'coming_with_any_other', title: 'Coming with Others' },
-            { id: 'amount', title: 'Amount' },
-            { id: 'names', title: 'Names' },
-            { id: 'Isverfified', title: 'Is Verified' },
-            { id: 'Isregistered', title: 'Is Registered' },
-            { id: 'status', title: 'Status' },
-            { id: 'Isdenied_entry', title: 'Is Denied Entry' },
-            { id: 'Ischeckedin', title: 'Is Checked In' },
-            { id: 'registration_date', title: 'Registration Date' },
-            { id: 'access_code', title: 'Access Code' },
-            { id: 'role', title: 'Role' },
-            { id: 'accreditation_status', title: 'Accreditation Status' },
-          ]
-        })
-
-        await csvWriter.writeRecords(guests)
-
-
-      //clear all records
-      await this.guestripo.clear();
-
-      return { message: 'you have successfully cleared the entire guest list. please follow the filepath to see the downloaded guestlist' ,filepath:outputFilePath};
-
-    } catch (error) {
-      throw error;
-    }
-  }
-
-
-
-  async downloadGuestList(): Promise<{message:string,filepath:string}> {
-    try {
       const guests = await this.guestripo.find();
 
       if (guests.length === 0) {
-        throw new HttpException('No records to download or clear.', HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          'No records to download or clear.',
+          HttpStatus.BAD_REQUEST,
+        );
       }
 
       const outputPath = path.resolve(__dirname, '../../downloads');
       const outputFilePath = path.join(outputPath, 'guest_list.csv');
-
-      // Create the downloads directory if it doesn't exist
-      if (!fs.existsSync(outputPath)) {
-        fs.mkdirSync(outputPath, { recursive: true });
-      }
-
 
       const csvWriter = csv.createObjectCsvWriter({
         path: outputFilePath,
@@ -533,10 +475,110 @@ export class AdminActionService {
 
       await csvWriter.writeRecords(guests);
 
-      return {message:"you have downloaded the guestlist",filepath:outputFilePath};
+      //clear all records
+      await this.guestripo.clear();
+
+      //save the notification
+      const notification = new Notifications();
+      notification.account = admin.id;
+      notification.subject = 'Admin downloaded and cleared the list';
+      notification.notification_type =
+        NotificationType.ADMIN_DOWNLOADED_AND_CLEARED_THE_GUEST_LIST;
+      notification.message = `the admin with id ${id}  has been dowloaded and deleted the entire guest list  `;
+      await this.notificationripo.save(notification);
+
+      return {
+        message:
+          'you have successfully cleared the entire guest list. please follow the filepath to see the downloaded guestlist',
+        filepath: outputFilePath,
+      };
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
+  async downloadGuestList(): Promise<{ message: string; filepath: string }> {
+    try {
+      const guests = await this.guestripo.find();
+
+      if (guests.length === 0) {
+        throw new HttpException(
+          'No records to download or clear.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const outputPath = path.resolve(__dirname, '../../downloads');
+      const outputFilePath = path.join(outputPath, 'guest_list.csv');
+
+      // Create the downloads directory if it doesn't exist
+      if (!fs.existsSync(outputPath)) {
+        fs.mkdirSync(outputPath, { recursive: true });
+      }
+
+      const csvWriter = csv.createObjectCsvWriter({
+        path: outputFilePath,
+        header: [
+          { id: 'id', title: 'ID' },
+          { id: 'fullname', title: 'Full Name' },
+          { id: 'sm_handle', title: 'Social Media Handle' },
+          { id: 'phone', title: 'Phone' },
+          { id: 'email', title: 'Email' },
+          { id: 'coming_with_any_other', title: 'Coming with Others' },
+          { id: 'amount', title: 'Amount' },
+          { id: 'names', title: 'Names' },
+          { id: 'Isverfified', title: 'Is Verified' },
+          { id: 'Isregistered', title: 'Is Registered' },
+          { id: 'status', title: 'Status' },
+          { id: 'Isdenied_entry', title: 'Is Denied Entry' },
+          { id: 'Ischeckedin', title: 'Is Checked In' },
+          { id: 'registration_date', title: 'Registration Date' },
+          { id: 'access_code', title: 'Access Code' },
+          { id: 'role', title: 'Role' },
+          { id: 'accreditation_status', title: 'Accreditation Status' },
+        ],
+      });
+
+      await csvWriter.writeRecords(guests);
+
+      return {
+        message: 'you have downloaded the guestlist',
+        filepath: outputFilePath,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async distinguishGuest(
+    id: string,
+    guestid: string,
+    dto: distinguishGuestsDto,
+  ): Promise<{ message: string }> {
+    try {
+      const admin = await this.adminripo.findOne({ where: { id: id } });
+      if (!admin)
+        throw new HttpException('admin does not exist', HttpStatus.NOT_FOUND);
+
+      const guest = await this.guestripo.findOne({ where: { id: guestid } });
+
+      //distinguish guest
+      guest.distinguished_as = dto.distinguish;
+      await this.guestripo.save(guest);
+
+      //save the notification
+      const notification = new Notifications();
+      notification.account = admin.id;
+      notification.subject = 'Guest Distinguished';
+      notification.notification_type = NotificationType.GUEST_DISTINGUISHED_AS;
+      notification.message = `the admin with id ${id}  has distinguished the guest, ${guest.fullname} as a ${dto.distinguish}  `;
+      await this.notificationripo.save(notification);
+
+      return {
+        message: `guest has been distinguished by the client ${admin.name} as  ${dto.distinguish}`,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
 }

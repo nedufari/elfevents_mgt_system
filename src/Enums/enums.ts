@@ -40,6 +40,7 @@ export enum AccessLevels{
 export enum NotificationType{
     GUEST_REGISTERED =" guest_registered",
     GUEST_CHECKED_IN ="guest_checked_in",
+    GUEST_DISTINGUISHED_AS ="guest_distinguihsed_as",
     QUEST_RECORDS_UPDATED ="guest_records_updated",
     QUEST_REMOVED_FROM_GUEST_LIST ="guest_removed_from_guest_list",
     SUPER_ADMIN_CREATED =" super_admin_created",
@@ -52,6 +53,12 @@ export enum NotificationType{
     ADMIN_CLEARANCE_UPGRADED="admin_clearance_upgraded",
     ADMIN_PASSWORD_CHANGED="admin_password_changed",
 
+    ADMIN_DOWNLOADED_AND_CLEARED_THE_GUEST_LIST="admin_downloaded_and_cleared_the_guest_list",
+    ADMIN_DOWNLOADED_THE_GUEST_LIST="admin_downloaded_the_guest_list",
+
+
+
+
 }
 
 export enum ComingAlongWithSomeone{
@@ -59,5 +66,11 @@ export enum ComingAlongWithSomeone{
     NO ='no'
 }
 
+export enum GuestType{
+    VIP ="vip",
+    SPECIAL_CARE ="special_care",
+    FAMILY = "family",
+    NORMAL_GUEST ="normal_guest"    
+}
 
 
