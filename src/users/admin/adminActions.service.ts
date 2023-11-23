@@ -62,6 +62,12 @@ export class AdminActionService {
     return nanoid();
   }
 
+  // Function to validate email format and domain
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@elfevents\.com$/;
+    return emailRegex.test(email);
+  }
+
   //create various kinds of admins
   async CreateAnyAdminKind(
     id: string,
@@ -75,18 +81,28 @@ export class AdminActionService {
           HttpStatus.NOT_FOUND,
         );
 
-        const checkemail = await this.adminripo.findOne({
-          where: { email: createadmindto.email },
-        });
-        if (checkemail)
-          throw new HttpException(
-            'this admin has already been created by you',
-            HttpStatus.CONFLICT,
-          );
+      // Validate email format and domain
+      if (!this.isValidEmail(createadmindto.email)) {
+        throw new HttpException(
+          'Invalid email format or domain. Email must have the @elfevents.com domain.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Check if the email already exists
+      const existingAdmin = await this.adminripo.findOne({
+        where: { email: createadmindto.email },
+      });
+      if (existingAdmin) {
+        throw new HttpException(
+          'An admin with this email already exists',
+          HttpStatus.CONFLICT,
+        );
+      }
 
       const plainpassword = this.generatePassword();
       const hashedpassword =
-      await this.adminservice.hashpassword(plainpassword);
+        await this.adminservice.hashpassword(plainpassword);
 
       //create a password and adminid ,role, //password is auto generated
       const newAdmin = new AdminEntity();
@@ -97,7 +113,7 @@ export class AdminActionService {
       newAdmin.admintype = createadmindto.admintype;
       newAdmin.accesslevel = createadmindto.accessLevel;
       newAdmin.Isverfified = true;
-      newAdmin.email = `${createadmindto.email}@elfevents.com`;
+      newAdmin.email = createadmindto.email;
 
       await this.adminripo.save(newAdmin);
 

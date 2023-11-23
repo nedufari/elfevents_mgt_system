@@ -11,8 +11,8 @@ export class CreateAdminDto{
     @IsNotEmpty()
     accessLevel:AccessLevels
 
-    @IsString()
-    @IsNotEmpty()
+    @IsEmail()
+    @IsNotEmpty({})
     email:string
 
     @IsString()

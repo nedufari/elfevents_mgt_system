@@ -16,7 +16,7 @@ export class AdminActionController{
 
     //super admin actions 
 
-    @UseGuards(AdmintypeGuard)
+    @UseGuards(AdmintypeGuard,AccessLevelGuard)
     @AdminType(AdminTypes.SUPER_ADMIN)
     @AccessLevelDecorator(AccessLevels.HIGHEST_LEVEL)
     @Post('/create-other-admin/:id')

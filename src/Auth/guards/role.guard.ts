@@ -32,7 +32,7 @@ export class AdmintypeGuard implements CanActivate{
     export class AccessLevelGuard implements CanActivate{
     constructor(private reflector:Reflector){}
     canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-        console.log('AdmintypeGuard executed');
+        console.log('Accesslevelguard executed');
         
         const requiredAaccessLevel=this.reflector.getAllAndOverride<AccessLevels[]>(ACCESSLEVEL_KEY,[
             context.getHandler(),
