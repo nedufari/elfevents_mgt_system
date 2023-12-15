@@ -60,6 +60,16 @@ export class GuestEntity implements IGuests{
     @Column({enum:GuestType, type:'enum', nullable:false,default:GuestType.NORMAL_GUEST})
     distinguished_as:GuestType
 
+    @Column({nullable:true})
+    event_location: string
+
+    @Column({nullable:true})
+    event_time: string
+
+    @Column({nullable:true})
+    event_title: string
+
+
    
 
 

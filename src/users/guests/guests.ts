@@ -20,6 +20,9 @@ export interface IGuests{
     role:Roles
     accreditation_status:Accreditation
     distinguished_as:GuestType
+    event_time:string
+    event_location:string
+    event_title:string
 
 }
 

@@ -22,6 +22,7 @@ import {
   AccreditationDto,
   ChangeAdmintypeDto,
   CreateAdminDto,
+  PrepareSystemDto,
   UpgradeClearanceLevelDto,
   distinguishGuestsDto,
 } from './dto/adminAction.dto';
@@ -141,7 +142,7 @@ export class AdminActionService {
     }
   }
 
-  async getalladmins(): Promise<IAdmin[]> {
+  public async getalladmins(): Promise<IAdmin[]> {
     const admins = await this.adminripo.find();
     return admins;
   }
@@ -442,11 +443,14 @@ export class AdminActionService {
     return guests;
   }
 
-  // clear entire guestlist only by superadmin
-  async DownloadAndclearEntireGuestList(
-    id: string,
+
+
+  // prepare system for another event 
+  async PrepareSystemForAnotherEvent(
+    id: string,eventdto:PrepareSystemDto
   ): Promise<{ message: string; filepath: string }> {
     try {
+      console.log('Entering PrepareSystemForAnotherEvent');
       const admin = await this.adminripo.findOne({ where: { id: id } });
       if (!admin)
         throw new HttpException(
@@ -454,6 +458,15 @@ export class AdminActionService {
           HttpStatus.NOT_FOUND,
         );
 
+        //set and update the details of the next event 
+        const eventdetails = new GuestEntity()
+        eventdetails.event_location=eventdto.event_location
+        eventdetails.event_time = eventdto.event_time 
+        eventdetails.event_title = eventdto.event_title
+        await this.guestripo.save(eventdetails)
+
+
+        //find the quest list first to determine whether it can be downloaded and clared 
       const guests = await this.guestripo.find();
 
       if (guests.length === 0) {
@@ -503,15 +516,20 @@ export class AdminActionService {
       notification.message = `the admin with id ${id}  has been dowloaded and deleted the entire guest list  `;
       await this.notificationripo.save(notification);
 
+      console.log('Exiting PrepareSystemForAnotherEvent');
+
       return {
         message:
-          'you have successfully cleared the entire guest list. please follow the filepath to see the downloaded guestlist',
+          'you have successfully cleared the entire guest list and have also prepared the systen for a new event . please follow the filepath to see the downloaded guestlist',
         filepath: outputFilePath,
       };
     } catch (error) {
+      console.error('Error in PrepareSystemForAnotherEvent:', error);
       throw error;
     }
   }
+
+
 
   async downloadGuestList(): Promise<{ message: string; filepath: string }> {
     try {

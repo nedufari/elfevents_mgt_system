@@ -66,4 +66,5 @@ export class AdminEntity implements IAdmin{
     @Column({type:'date',nullable:true})
     is_locked_until:Date
 
+  
 }

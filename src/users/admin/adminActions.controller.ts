@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards,ForbiddenException, Put } from "@nestjs/common";
 import { AdminActionService } from "./adminActions.service";
-import { AccreditationDto, ChangeAdmintypeDto, CreateAdminDto, UpgradeClearanceLevelDto, distinguishGuestsDto } from "./dto/adminAction.dto";
+import { AccreditationDto, ChangeAdmintypeDto, CreateAdminDto, PrepareSystemDto, UpgradeClearanceLevelDto, distinguishGuestsDto } from "./dto/adminAction.dto";
 import { IAdmin, IAdminChangePassword, IChangeAdminType, ICreateOtherAdmin, IUpgradeAdminClearanceLevel } from "./admin";
 import { JwtGuard } from "../../auth/guards/jwt.guard";
 import {  AccessLevelGuard, AdmintypeGuard } from "../../auth/guards/role.guard";
@@ -194,14 +194,14 @@ export class AdminActionController{
     @UseGuards(AdmintypeGuard,AccessLevelGuard)
     @AdminType(AdminTypes.SUPER_ADMIN)
     @AccessLevelDecorator(AccessLevels.HIGHEST_LEVEL)
-    @Post('clear-download-guest-list/:id')
-    async downloadandclearguestlist(@Param('id')id:string,@Req()request):Promise<{message:string,filepath:string}>{
+    @Post('prepare-system/:id')
+    async PrepareSystemforAnotherEvent(@Param('id')id:string,@Req()request,@Body()eventdto:PrepareSystemDto):Promise<{message:string,filepath:string}>{
       try {
 
         const userfromRequest = request.user.id
         if (userfromRequest !== id) throw new ForbiddenException('you are not allowed to perform this action because you are not the owner of this account')
 
-        return await this.adminactionservice.DownloadAndclearEntireGuestList(id)
+        return await this.adminactionservice.PrepareSystemForAnotherEvent(id,eventdto)
       } catch (error) {
         
       }

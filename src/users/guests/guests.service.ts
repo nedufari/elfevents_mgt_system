@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GuestEntity } from '../../Entity/guests.entity';
 import { GuestRepository, NotificationsRepository } from './guests.repository';
@@ -8,11 +8,14 @@ import { ComingAlongWithSomeone, GuestsStatus, NotificationType } from '../../En
 import { customAlphabet } from 'nanoid';
 import { Mailer } from '../../mailer/mailer.service';
 import { IGuests } from './guests';
+import { AdminRepository } from '../admin/admin.repository';
+import { AdminEntity } from '../../Entity/admin.entity';
 
 @Injectable()
 export class GuestsService {
     constructor(@InjectRepository(GuestEntity) private guestripo: GuestRepository,
     @InjectRepository(Notifications) private notificationripo: NotificationsRepository,
+    @InjectRepository(AdminEntity) private readonly adminripo: AdminRepository,
     private mailerservice:Mailer){}
 
 
@@ -26,6 +29,7 @@ export class GuestsService {
     async RegisterGuests(dto:RegisterGuestsDto):Promise<{message:string}>{
         const verifyemail = await this.guestripo.findOne({where:{email:dto.email}})
         if(verifyemail) throw new HttpException('you are already on the guest list for this event',HttpStatus.FOUND)
+
 
         const guest = new GuestEntity()
         guest.email = dto.email
@@ -63,7 +67,7 @@ export class GuestsService {
         await this.guestripo.save(guest)
 
         //forward the mail 
-        await this.mailerservice.SendAccessCodeMail(guest.email,guest.access_code,guest.fullname)
+        await this.mailerservice.SendAccessCodeMail(guest.email,guest.access_code,guest.fullname,guest.event_title,guest.event_location,guest.event_time)
         
         //set notification 
         const notification = new Notifications()
@@ -74,10 +78,7 @@ export class GuestsService {
         await this.notificationripo.save(notification)
   
         return {message:"new guest added to the guest list, please check your mail for the event invite "}
-      
-
-
-
+    
     }
 
     async getall():Promise<IGuests[]>{

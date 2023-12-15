@@ -19,7 +19,7 @@ export interface IAdmin{
     role:Roles
     created_at: Date
     AdminID:string
-    
+   
 
 
 }

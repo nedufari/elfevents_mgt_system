@@ -5,7 +5,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 export class Mailer {
     constructor(private readonly mailerservice:MailerService){}
 
-    async SendAccessCodeMail(email:string, accesscode: string,fullname:string):Promise<void>{
+    async SendAccessCodeMail(email:string, accesscode: string,fullname:string,eventtitle:string, eventlocation:string,eventtime:string):Promise<void>{
         const subject = "Event AccessCode Issuance";
     const content = `<!DOCTYPE html>
     <html lang="en">
@@ -82,8 +82,11 @@ export class Mailer {
         <p class="otp">${accesscode}</p>
         <div class="instructions">
           <p>
-            Thank you for registering with us! Your Access Code is a key to a magical experience at our upcoming event.
+            Thank you for registering with us! Your Access Code is a key to a magical experience at our upcoming event. with the following details: 
           </p>
+          <p> ${eventtitle} </p>
+          <p> ${eventlocation} </p>
+          <p> ${eventtime} </p>
           <p>
             Use the Access Code provided above for seamless entry during the event. This unique code serves as your exclusive invitation.
           </p>

@@ -42,4 +42,20 @@ export class distinguishGuestsDto{
     @IsEnum(GuestType)
     distinguish : GuestType
 }
+
+export class PrepareSystemDto{
+   
+
+    @IsString()
+    @IsNotEmpty()
+    event_location:string
+
+    @IsString()
+    @IsNotEmpty()
+    event_time:string
+
+    @IsString()
+    @IsNotEmpty()
+    event_title:string
+}
     
